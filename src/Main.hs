@@ -14,4 +14,4 @@ t2 = fmap (+ 1) t1
 
 main :: IO ()
 main = do
-  putStrLn . show $ t2
+  print t2
