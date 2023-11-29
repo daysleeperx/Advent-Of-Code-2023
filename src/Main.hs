@@ -1,13 +1,13 @@
 module Main (main) where
 
-data Tree a = Leaf a | Node (Tree a) a (Tree a) deriving (Show)
+data Tree a = EmptyTree | Node a (Tree a) (Tree a) deriving (Show, Read, Eq)
 
 instance Functor Tree where
-  fmap f (Leaf a) = Leaf (f a)
-  fmap f (Node left root right) = Node (fmap f left) (f root) (fmap f right)
+  fmap _ EmptyTree = EmptyTree
+  fmap f (Node root left right) = Node (f root) (fmap f left) (fmap f right)
 
 t1 :: Tree Int
-t1 = Node (Leaf 1) 2 (Leaf 3)
+t1 = Node 1 (Node 2 EmptyTree EmptyTree) (Node 3 EmptyTree EmptyTree)
 
 t2 :: Tree Int
 t2 = fmap (+ 1) t1
