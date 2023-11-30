@@ -1,9 +1,13 @@
 module Main (main) where
 
-import System.Environment
+import qualified Day00.Test as Test
+import System.Environment (getArgs)
+
+solvers :: [FilePath -> IO ()]
+solvers = [Test.solve]
 
 main :: IO ()
 main = do
-  args <- getArgs
-  putStrLn "The arguments are:"
-  mapM_ putStrLn args
+  (day : filePath : _) <- getArgs
+  let solver = solvers !! read day
+  solver filePath

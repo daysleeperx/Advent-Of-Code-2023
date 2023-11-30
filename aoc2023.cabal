@@ -18,6 +18,7 @@ extra-source-files:  README.md
 executable aoc2023
   hs-source-dirs:      src
   main-is:             Main.hs
+  other-modules:       Day00.Test
   default-language:    Haskell2010
   build-depends:       base >= 4.7 && < 5
   ghc-options:         -Wall
