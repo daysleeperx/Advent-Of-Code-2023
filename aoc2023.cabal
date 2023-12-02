@@ -19,8 +19,11 @@ executable aoc2023
   hs-source-dirs:      src
   main-is:             Main.hs
   other-modules:       Day00.Test
+                     , Day01.Trebuchet
   default-language:    Haskell2010
   build-depends:       base >= 4.7 && < 5
+                     , megaparsec >= 9.0 && < 10
+                     , text >= 1.2
   ghc-options:         -Wall
                        -Wcompat
                        -Widentities
