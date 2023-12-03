@@ -68,7 +68,7 @@ parseGameRecord :: Parser GameRecord
 parseGameRecord = do
   idx <- parseGameId
   games <- parseGame' `sepBy1` semicolon
-  return $ GameRecord (idx, mconcat games)
+  pure $ GameRecord (idx, mconcat games)
 
 parseGameRecords :: Parser [GameRecord]
 parseGameRecords = parseGameRecord `sepBy1` newline
