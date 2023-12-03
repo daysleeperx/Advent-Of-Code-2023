@@ -18,7 +18,8 @@ extra-source-files:  README.md
 executable aoc2023
   hs-source-dirs:      src
   main-is:             Main.hs
-  other-modules:       Day00.Test
+  other-modules:       ParserUtils  
+                     , Day00.Test
                      , Day02.CubeConundrum
                      , Day01.Trebuchet
   default-language:    Haskell2010

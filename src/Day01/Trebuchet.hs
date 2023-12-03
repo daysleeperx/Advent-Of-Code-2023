@@ -4,11 +4,9 @@ module Day01.Trebuchet (solve) where
 
 import Data.Char (digitToInt)
 import Data.Functor (($>))
-import Data.Void
+import ParserUtils (Parser)
 import Text.Megaparsec
 import Text.Megaparsec.Char
-
-type Parser = Parsec Void String
 
 parseDigit :: Parser Int
 parseDigit =

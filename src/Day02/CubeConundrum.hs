@@ -4,33 +4,9 @@
 
 module Day02.CubeConundrum (solve) where
 
-import Data.Void
+import ParserUtils (Parser, colon, comma, integer, lexeme, semicolon)
 import Text.Megaparsec
 import Text.Megaparsec.Char
-import qualified Text.Megaparsec.Char.Lexer as L
-
-type Parser = Parsec Void String
-
-sc :: Parser ()
-sc = L.space space1 empty empty
-
-lexeme :: Parser a -> Parser a
-lexeme = L.lexeme sc
-
-integer :: Parser Int
-integer = lexeme L.decimal
-
-symbol :: String -> Parser String
-symbol = L.symbol sc
-
-comma :: Parser String
-comma = symbol ","
-
-semicolon :: Parser String
-semicolon = symbol ";"
-
-colon :: Parser String
-colon = symbol ":"
 
 newtype Game = Game (Int, Int, Int) deriving (Show, Eq)
 
@@ -51,15 +27,15 @@ parseGame = try red <|> try green <|> blue
     blue = Game . (0,0,) <$> integer <* string "blue"
 
 parseGame' :: Parser Game
-parseGame' = mconcat <$> sepBy1 parseGame comma
+parseGame' = mconcat <$> parseGame `sepBy1` comma
 
-newtype GameRecord = GameRecord (Int, Game) deriving (Show)
+newtype GameRecord = GameRecord (Int, [Game]) deriving (Show)
 
 getGameId :: GameRecord -> Int
 getGameId (GameRecord (idx, _)) = idx
 
-getGame :: GameRecord -> Game
-getGame (GameRecord (_, game)) = game
+getGames :: GameRecord -> [Game]
+getGames (GameRecord (_, games)) = games
 
 parseGameId :: Parser Int
 parseGameId = lexeme (string "Game") *> integer <* colon
@@ -68,13 +44,13 @@ parseGameRecord :: Parser GameRecord
 parseGameRecord = do
   idx <- parseGameId
   games <- parseGame' `sepBy1` semicolon
-  pure $ GameRecord (idx, mconcat games)
+  pure $ GameRecord (idx, games)
 
 parseGameRecords :: Parser [GameRecord]
 parseGameRecords = parseGameRecord `sepBy1` newline
 
 filterPossibleGames :: Game -> [GameRecord] -> [GameRecord]
-filterPossibleGames g = filter ((<= g) . getGame)
+filterPossibleGames g = filter (all (<= g) . getGames)
 
 sumPossibleGamesIds :: Game -> [GameRecord] -> Int
 sumPossibleGamesIds g = sum . fmap getGameId . filterPossibleGames g
@@ -83,7 +59,7 @@ powerOfCubes :: Game -> Int
 powerOfCubes (Game (r, g, b)) = r * g * b
 
 sumPowerOfLeastCubes :: [GameRecord] -> Int
-sumPowerOfLeastCubes = sum . fmap (powerOfCubes . getGame)
+sumPowerOfLeastCubes = sum . fmap (powerOfCubes . mconcat . getGames)
 
 solve :: FilePath -> IO ()
 solve filePath = do
