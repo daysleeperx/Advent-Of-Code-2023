@@ -4,9 +4,10 @@ sh: cd <%= cwd %>/<%= `src/Day${String(day).padStart(2, '0')}` %> && touch input
 ---
 -- Day <%=day%>: <%=name%>
 
-module <%= `Day${String(day).padStart(2,0)}.${name}` %> where
+module <%= `Day${String(day).padStart(2,0)}.${name}` %> (solve) where
 
-import System.IO (readFile)
+import Text.Megaparsec
+import Text.Megaparsec.Char
 
 solve :: FilePath -> IO ()
 solve filePath = do
