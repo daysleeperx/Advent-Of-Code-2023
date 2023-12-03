@@ -53,25 +53,28 @@ parseGame = try red <|> try green <|> blue
 parseGame' :: Parser Game
 parseGame' = mconcat <$> sepBy1 parseGame comma
 
-newtype GameRecord = GameRecord (Int, [Game]) deriving (Show)
+newtype GameRecord = GameRecord (Int, Game) deriving (Show)
 
 getGameId :: GameRecord -> Int
 getGameId (GameRecord (idx, _)) = idx
 
-getGames :: GameRecord -> [Game]
-getGames (GameRecord (_, games)) = games
+getGame :: GameRecord -> Game
+getGame (GameRecord (_, game)) = game
 
 parseGameId :: Parser Int
 parseGameId = lexeme (string "Game") *> integer <* colon
 
 parseGameRecord :: Parser GameRecord
-parseGameRecord = GameRecord <$> ((,) <$> parseGameId <*> sepBy1 parseGame' semicolon)
+parseGameRecord = do
+  idx <- parseGameId
+  games <- parseGame' `sepBy1` semicolon
+  return $ GameRecord (idx, mconcat games)
 
 parseGameRecords :: Parser [GameRecord]
 parseGameRecords = parseGameRecord `sepBy1` newline
 
 filterPossibleGames :: Game -> [GameRecord] -> [GameRecord]
-filterPossibleGames g = filter (all (<= g) . getGames)
+filterPossibleGames g = filter ((<= g) . getGame)
 
 sumPossibleGamesIds :: Game -> [GameRecord] -> Int
 sumPossibleGamesIds g = sum . fmap getGameId . filterPossibleGames g
@@ -80,7 +83,7 @@ powerOfCubes :: Game -> Int
 powerOfCubes (Game (r, g, b)) = r * g * b
 
 sumPowerOfLeastCubes :: [GameRecord] -> Int
-sumPowerOfLeastCubes = sum . fmap (powerOfCubes . mconcat . getGames)
+sumPowerOfLeastCubes = sum . fmap (powerOfCubes . getGame)
 
 solve :: FilePath -> IO ()
 solve filePath = do
