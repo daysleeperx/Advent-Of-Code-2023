@@ -1,5 +1,4 @@
 -- Day 2: CubeConundrum
-{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE TupleSections #-}
 
 module Day02.CubeConundrum (solve) where
@@ -9,9 +8,6 @@ import Text.Megaparsec
 import Text.Megaparsec.Char
 
 newtype Game = Game (Int, Int, Int) deriving (Show, Eq)
-
-instance Ord Game where
-  (Game (r, g, b)) <= (Game (r', g', b')) = r <= r' && g <= g' && b <= b'
 
 instance Semigroup Game where
   Game (r, g, b) <> Game (r', g', b') = Game (max r r', max g g', max b b')
@@ -49,8 +45,11 @@ parseGameRecord = do
 parseGameRecords :: Parser [GameRecord]
 parseGameRecords = parseGameRecord `sepBy1` newline
 
+isPossibleGame :: Game -> Game -> Bool
+isPossibleGame g g' = g <> g' == g
+
 filterPossibleGames :: Game -> [GameRecord] -> [GameRecord]
-filterPossibleGames g = filter (all (<= g) . getGames)
+filterPossibleGames g = filter (all (isPossibleGame g) . getGames)
 
 sumPossibleGamesIds :: Game -> [GameRecord] -> Int
 sumPossibleGamesIds g = sum . fmap getGameId . filterPossibleGames g
