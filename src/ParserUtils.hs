@@ -7,6 +7,7 @@ module ParserUtils
     comma,
     semicolon,
     colon,
+    dot,
   )
 where
 
@@ -37,3 +38,6 @@ semicolon = symbol ";"
 
 colon :: Parser String
 colon = symbol ":"
+
+dot :: Parser String
+dot = symbol "."
