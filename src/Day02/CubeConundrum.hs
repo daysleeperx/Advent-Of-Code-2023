@@ -65,6 +65,9 @@ solve filePath = do
   contents <- readFile filePath
   case parse parseGameRecords filePath contents of
     Left eb -> putStr (errorBundlePretty eb)
-    Right records -> do
-      print $ sumPossibleGamesIds (Game (12, 13, 14)) records
-      print $ sumPowerOfLeastCubes records
+    Right records ->
+      putStrLn $
+        unlines
+          [ "Part 1: " ++ show (sumPossibleGamesIds (Game (12, 13, 14)) records),
+            "Part 2: " ++ show (sumPowerOfLeastCubes records)
+          ]
