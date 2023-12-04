@@ -67,10 +67,7 @@ hasAdjacentSymbol (NumberWithRange _ (startY, startX) (endY, endX)) cells = any 
         cells
 
 partNumbers :: [Cell] -> [NumberWithRange]
-partNumbers cells = do
-  NumberCell n <- cells
-  guard (hasAdjacentSymbol n cells)
-  pure n
+partNumbers cells = [n | NumberCell n <- cells, hasAdjacentSymbol n cells]
 
 sumPartNumbers :: [Cell] -> Int
 sumPartNumbers = sum . map getNum . partNumbers
