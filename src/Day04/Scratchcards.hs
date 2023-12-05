@@ -13,12 +13,12 @@ type Card = ([Int], [Int])
 parseInts :: Parser [Int]
 parseInts = many integer
 
-parseCardId :: Parser ()
-parseCardId = void $ lexeme (string "Card") *> integer *> colon
+parseCardId :: Parser Int
+parseCardId = lexeme (string "Card") *> integer <* colon
 
 parseCard :: Parser Card
 parseCard = do
-  parseCardId
+  void parseCardId
   winning <- parseInts
   void pipe
   nums <- parseInts
