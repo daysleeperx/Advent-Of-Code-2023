@@ -3,7 +3,7 @@
 module Day04.Scratchcards (solve) where
 
 import Control.Monad (void)
-import Data.List (foldl', intersect)
+import Data.List (intersect)
 import ParserUtils (Parser, colon, integer, lexeme, pipe)
 import Text.Megaparsec
 import Text.Megaparsec.Char
@@ -37,20 +37,8 @@ totalPoints c
   where
     n = countWins c
 
-accumulateCopies :: [Int] -> [Int]
-accumulateCopies wins = foldl' updateCopies initCopies indexedWins
-  where
-    indexedWins = zip [0 ..] wins
-    initCopies = replicate (length wins) 1
-
-updateCopies :: [Int] -> (Int, Int) -> [Int]
-updateCopies copies (idx, w) = zipWith (+) copies updates
-  where
-    updRange = [idx + 1 .. idx + w]
-    updates = [if i `elem` updRange then copies !! idx else 0 | i <- [0 .. length copies - 1]]
-
 totalCards :: [Card] -> Int
-totalCards = sum . accumulateCopies . map countWins
+totalCards = sum . foldr ((\w l -> 1 + sum (take w l) : l) . countWins) []
 
 solve :: FilePath -> IO ()
 solve filePath = do
