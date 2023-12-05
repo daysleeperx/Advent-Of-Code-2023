@@ -32,13 +32,13 @@ countWins = length . uncurry intersect
 
 totalPoints :: Card -> Int
 totalPoints c
-  | n <= 0 = 0
+  | n == 0 = 0
   | otherwise = 2 ^ (n - 1)
   where
     n = countWins c
 
 totalCards :: [Card] -> Int
-totalCards = sum . foldr ((\w l -> 1 + sum (take w l) : l) . countWins) []
+totalCards = sum . foldr ((\w xs -> 1 + sum (take w xs) : xs) . countWins) []
 
 solve :: FilePath -> IO ()
 solve filePath = do
