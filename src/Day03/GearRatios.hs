@@ -97,6 +97,6 @@ solve filePath = do
     Right input ->
       putStrLn $
         unlines
-          [ "Part 1: " ++ show (sumPartNumbers input),
-            "Part 2: " ++ show (sumGearRatios input)
+          [ "Part 1: " <> show (sumPartNumbers input),
+            "Part 2: " <> show (sumGearRatios input)
           ]
