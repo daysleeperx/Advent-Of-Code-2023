@@ -8,6 +8,7 @@ module ParserUtils
     semicolon,
     colon,
     dot,
+    pipe,
   )
 where
 
@@ -41,3 +42,6 @@ colon = symbol ":"
 
 dot :: Parser String
 dot = symbol "."
+
+pipe :: Parser String
+pipe = symbol "|"
