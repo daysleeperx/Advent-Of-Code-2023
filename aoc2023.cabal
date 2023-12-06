@@ -18,6 +18,7 @@ executable aoc2023
   hs-source-dirs:      src
   main-is:             Main.hs
   other-modules:       ParserUtils  
+                     , Day05.IfYouGiveASeedAFertilizer
                      , Day04.Scratchcards
                      , Day03.GearRatios
                      , Day02.CubeConundrum

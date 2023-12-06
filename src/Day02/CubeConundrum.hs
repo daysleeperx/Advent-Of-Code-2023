@@ -1,19 +1,28 @@
+{-# LANGUAGE InstanceSigs #-}
 -- Day 2: CubeConundrum
 {-# LANGUAGE TupleSections #-}
 
 module Day02.CubeConundrum (solve) where
 
 import ParserUtils (Parser, colon, comma, integer, lexeme, semicolon)
-import Text.Megaparsec
-import Text.Megaparsec.Char
+import Text.Megaparsec (
+    MonadParsec (try),
+    errorBundlePretty,
+    parse,
+    sepBy1,
+    (<|>),
+ )
+import Text.Megaparsec.Char (newline, string)
 
 newtype Game = Game (Int, Int, Int) deriving (Show, Eq)
 
 instance Semigroup Game where
-  Game (r, g, b) <> Game (r', g', b') = Game (max r r', max g g', max b b')
+    (<>) :: Game -> Game -> Game
+    Game (r, g, b) <> Game (r', g', b') = Game (max r r', max g g', max b b')
 
 instance Monoid Game where
-  mempty = Game (0, 0, 0)
+    mempty :: Game
+    mempty = Game (0, 0, 0)
 
 parseGame :: Parser Game
 parseGame = try red <|> try green <|> blue
@@ -38,9 +47,9 @@ parseGameId = lexeme (string "Game") *> integer <* colon
 
 parseGameRecord :: Parser GameRecord
 parseGameRecord = do
-  idx <- parseGameId
-  games <- parseGame' `sepBy1` semicolon
-  pure $ GameRecord (idx, games)
+    idx <- parseGameId
+    games <- parseGame' `sepBy1` semicolon
+    pure $ GameRecord (idx, games)
 
 parseGameRecords :: Parser [GameRecord]
 parseGameRecords = parseGameRecord `sepBy1` newline
@@ -62,12 +71,12 @@ sumPowerOfLeastCubes = sum . fmap (powerOfCubes . mconcat . getGames)
 
 solve :: FilePath -> IO ()
 solve filePath = do
-  contents <- readFile filePath
-  case parse parseGameRecords filePath contents of
-    Left eb -> putStr (errorBundlePretty eb)
-    Right records ->
-      putStrLn $
-        unlines
-          [ "Part 1: " ++ show (sumPossibleGamesIds (Game (12, 13, 14)) records),
-            "Part 2: " ++ show (sumPowerOfLeastCubes records)
-          ]
+    contents <- readFile filePath
+    case parse parseGameRecords filePath contents of
+        Left eb -> putStr (errorBundlePretty eb)
+        Right records ->
+            putStrLn $
+                unlines
+                    [ "Part 1: " <> show (sumPossibleGamesIds (Game (12, 13, 14)) records)
+                    , "Part 2: " <> show (sumPowerOfLeastCubes records)
+                    ]

@@ -1,5 +1,5 @@
-module ParserUtils
-  ( Parser,
+module ParserUtils (
+    Parser,
     sc,
     lexeme,
     integer,
@@ -9,12 +9,12 @@ module ParserUtils
     colon,
     dot,
     pipe,
-  )
+)
 where
 
-import Data.Void
-import Text.Megaparsec
-import Text.Megaparsec.Char
+import Data.Void (Void)
+import Text.Megaparsec (Parsec, empty)
+import Text.Megaparsec.Char (space1)
 import qualified Text.Megaparsec.Char.Lexer as L
 
 type Parser = Parsec Void String
