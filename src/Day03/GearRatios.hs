@@ -26,7 +26,10 @@ type Position = (Int, Int)
 
 data NumberWithRange = NumberWithRange Int Position Position deriving (Show)
 
-data Cell = NumberCell NumberWithRange | SymbolCell Char Position deriving (Show)
+data Cell
+    = NumberCell NumberWithRange
+    | SymbolCell Char Position
+    deriving (Show)
 
 getNum :: NumberWithRange -> Int
 getNum (NumberWithRange n _ _) = n

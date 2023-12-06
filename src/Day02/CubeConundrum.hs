@@ -1,5 +1,5 @@
-{-# LANGUAGE InstanceSigs #-}
 -- Day 2: CubeConundrum
+{-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE TupleSections #-}
 
 module Day02.CubeConundrum (solve) where

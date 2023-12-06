@@ -100,7 +100,7 @@ expandSeedRanges :: [[Int]] -> [Int]
 expandSeedRanges =
     concatMap
         ( \case
-            [a, b] -> [a .. a + b]
+            [a, b] -> [a .. a + b - 1]
             _ -> []
         )
 
