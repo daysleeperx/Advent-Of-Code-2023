@@ -6,6 +6,7 @@ import qualified Day02.CubeConundrum as CubeConundrum
 import qualified Day03.GearRatios as GearRatios
 import qualified Day04.Scratchcards as Scratchcards
 import qualified Day05.IfYouGiveASeedAFertilizer as IfYouGiveASeedAFertilizer
+import qualified Day06.WaitForIt as WaitForIt
 import System.Environment (getArgs)
 
 solvers :: [FilePath -> IO ()]
@@ -16,6 +17,7 @@ solvers =
     , GearRatios.solve
     , Scratchcards.solve
     , IfYouGiveASeedAFertilizer.solve
+    , WaitForIt.solve
     ]
 
 main :: IO ()
