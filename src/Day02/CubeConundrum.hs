@@ -34,22 +34,23 @@ parseGame = try red <|> try green <|> blue
 parseGame' :: Parser Game
 parseGame' = mconcat <$> parseGame `sepBy1` comma
 
-newtype GameRecord = GameRecord (Int, [Game]) deriving (Show)
-
-getGameId :: GameRecord -> Int
-getGameId (GameRecord (idx, _)) = idx
-
-getGames :: GameRecord -> [Game]
-getGames (GameRecord (_, games)) = games
+data GameRecord = Gamerecord
+    { getGameId :: Int
+    , getGames :: [Game]
+    }
+    deriving (Show)
 
 parseGameId :: Parser Int
-parseGameId = lexeme (string "Game") *> integer <* colon
+parseGameId =
+    lexeme (string "Game")
+        *> integer
+        <* colon
 
 parseGameRecord :: Parser GameRecord
 parseGameRecord = do
     idx <- parseGameId
     games <- parseGame' `sepBy1` semicolon
-    pure $ GameRecord (idx, games)
+    pure $ Gamerecord idx games
 
 parseGameRecords :: Parser [GameRecord]
 parseGameRecords = parseGameRecord `sepBy1` newline
