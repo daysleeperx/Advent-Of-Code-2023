@@ -27,10 +27,10 @@ parseRace :: Parser Race
 parseRace = liftA2 zip parseLine parseLine
 
 getWinningBounds :: (Double, Double) -> (Int, Int)
-getWinningBounds (t, dist) = (floor r1, ceiling r2)
+getWinningBounds (t, dist) = (floor high, ceiling low)
   where
-    r1 = 0.5 * (t + sqrt (t ** 2 - 4 * dist))
-    r2 = 0.5 * (t - sqrt (t ** 2 - 4 * dist))
+    high = 0.5 * (t + sqrt (t ** 2 - 4 * dist))
+    low = 0.5 * (t - sqrt (t ** 2 - 4 * dist))
 
 noOfWinning :: (Int, Int) -> Int
 noOfWinning = succ . uncurry (-) . getWinningBounds . both fromIntegral
