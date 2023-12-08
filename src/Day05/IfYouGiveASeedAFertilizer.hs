@@ -3,6 +3,7 @@
 
 module Day05.IfYouGiveASeedAFertilizer (solve) where
 
+import Control.Applicative (liftA2)
 import Data.Function ((&))
 import Data.List (unfoldr)
 import ParserUtils (Parser, colon, integer)
@@ -63,10 +64,7 @@ parseRangeMap =
 type InputType = ([Int], [RangeMap])
 
 parseInput :: Parser InputType
-parseInput =
-    (,)
-        <$> parseSeeds
-        <*> many parseRangeMap
+parseInput = liftA2 (,) parseSeeds (many parseRangeMap)
 
 convertNum :: Int -> Range -> Int
 convertNum num Range{target = t, source = src, step = s}
@@ -82,10 +80,7 @@ convertNums seed (r : rs)
     converted = convertNum seed r
 
 findLocation :: Int -> [RangeMap] -> Int
-findLocation seed maps =
-    maps
-        & map ranges
-        & foldl convertNums seed
+findLocation seed = foldl convertNums seed . map ranges
 
 findMinLocation :: InputType -> Int
 findMinLocation (seeds, maps) =

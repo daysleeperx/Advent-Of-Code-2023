@@ -1,4 +1,5 @@
 -- Day 6: WaitForIt
+{-# OPTIONS_GHC -Wno-type-defaults #-}
 
 module Day06.WaitForIt (solve) where
 
@@ -26,14 +27,15 @@ parseLine =
 parseRace :: Parser Race
 parseRace = liftA2 zip parseLine parseLine
 
-getWinningBounds :: (Double, Double) -> (Int, Int)
+getWinningBounds :: (Int, Int) -> (Int, Int)
 getWinningBounds (t, dist) = (floor high, ceiling low)
   where
-    high = 0.5 * (t + sqrt (t ** 2 - 4 * dist))
-    low = 0.5 * (t - sqrt (t ** 2 - 4 * dist))
+    delta = t * t - 4 * dist
+    high = 0.5 * (fromIntegral t + sqrt (fromIntegral delta))
+    low = 0.5 * (fromIntegral t - sqrt (fromIntegral delta))
 
 noOfWinning :: (Int, Int) -> Int
-noOfWinning = succ . uncurry (-) . getWinningBounds . both fromIntegral
+noOfWinning = succ . uncurry (-) . getWinningBounds
 
 productOfWinning :: Race -> Int
 productOfWinning = product . map noOfWinning
