@@ -3,8 +3,8 @@
 
 module Day03.GearRatios (solve) where
 
+import Control.Category ((>>>))
 import Control.Monad (guard)
-import Data.Function ((&))
 import Data.List (nub, (\\))
 import ParserUtils (Parser, dot, integer)
 import Text.Megaparsec (
@@ -24,15 +24,23 @@ import Text.Megaparsec.Char (newline)
 
 type Position = (Int, Int)
 
-data NumberWithRange = NumberWithRange Int Position Position deriving (Show)
+data NumberWithRange = NumberWithRange
+    { getNum :: Int
+    , getStart :: Position
+    , getEnd :: Position
+    }
+    deriving (Show)
+
+data Symbol = Symbol
+    { getSymbol :: Char
+    , getPos :: Position
+    }
+    deriving (Show)
 
 data Cell
     = NumberCell NumberWithRange
-    | SymbolCell Char Position
+    | SymbolCell Symbol
     deriving (Show)
-
-getNum :: NumberWithRange -> Int
-getNum (NumberWithRange n _ _) = n
 
 parseNumberWithRange :: Parser Cell
 parseNumberWithRange = do
@@ -53,8 +61,10 @@ parseSymbol = do
     symbol <- anySingle
     pure $
         SymbolCell
-            symbol
-            (unPos $ sourceLine pos, unPos $ sourceColumn pos)
+            ( Symbol
+                symbol
+                (unPos $ sourceLine pos, unPos $ sourceColumn pos)
+            )
 
 parseEngineElement :: Parser Cell
 parseEngineElement = parseNumberWithRange <|> parseSymbol
@@ -76,7 +86,7 @@ hasAdjacentSymbol (NumberWithRange _ (startY, startX) (endY, endX)) cells = any 
     isAdjacentSymbol pos =
         any
             ( \case
-                SymbolCell _ p -> p == pos
+                SymbolCell p -> getPos p == pos
                 _ -> False
             )
             cells
@@ -96,13 +106,13 @@ getAdjacentNumbers (y, x) cells = do
 
 sumGearRatios :: [Cell] -> Int
 sumGearRatios cells =
-    positions
-        & map (`getAdjacentNumbers` cells)
-        & filter ((== 2) . length)
-        & map (product . map getNum)
-        & sum
+    map (`getAdjacentNumbers` cells)
+        >>> filter ((== 2) . length)
+        >>> map (product . map getNum)
+        >>> sum
+        $ positions
   where
-    positions = [(y, x) | SymbolCell _ (y, x) <- cells]
+    positions = [getPos s | SymbolCell s <- cells]
 
 solve :: FilePath -> IO ()
 solve filePath = do

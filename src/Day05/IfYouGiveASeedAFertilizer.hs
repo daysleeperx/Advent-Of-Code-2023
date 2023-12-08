@@ -4,7 +4,7 @@
 module Day05.IfYouGiveASeedAFertilizer (solve) where
 
 import Control.Applicative (liftA2)
-import Data.Function ((&))
+import Control.Category ((>>>))
 import Data.List (unfoldr)
 import ParserUtils (Parser, colon, integer)
 import Text.Megaparsec (choice, errorBundlePretty, many, parse)
@@ -68,7 +68,7 @@ parseInput = liftA2 (,) parseSeeds (many parseRangeMap)
 
 convertNum :: Int -> Range -> Int
 convertNum num Range{target = t, source = src, step = s}
-    | src <= num && num < src + s = num - src + t
+    | src <= num, num < src + s = num - src + t
     | otherwise = num
 
 convertNums :: Int -> [Range] -> Int
@@ -82,11 +82,8 @@ convertNums seed (r : rs)
 findLocation :: Int -> [RangeMap] -> Int
 findLocation seed = foldl convertNums seed . map ranges
 
-findMinLocation :: InputType -> Int
-findMinLocation (seeds, maps) =
-    seeds
-        & map (`findLocation` maps)
-        & minimum
+findMinLocation :: [RangeMap] -> [Int] -> Int
+findMinLocation maps = minimum . map (`findLocation` maps)
 
 chunks :: Int -> [a] -> [[a]]
 chunks n = takeWhile ((== n) . length) . unfoldr (Just . splitAt n)
@@ -99,22 +96,21 @@ expandSeedRanges =
             _ -> []
         )
 
-findMinLocation' :: InputType -> Int
-findMinLocation' (seeds, maps) =
-    seeds
-        & chunks 2
-        & expandSeedRanges
-        & map (`findLocation` maps)
-        & minimum
+findMinLocation' :: [RangeMap] -> [Int] -> Int
+findMinLocation' maps =
+    chunks 2
+        >>> expandSeedRanges
+        >>> map (`findLocation` maps)
+        >>> minimum
 
 solve :: FilePath -> IO ()
 solve filePath = do
     contents <- readFile filePath
     case parse parseInput filePath contents of
         Left eb -> putStr (errorBundlePretty eb)
-        Right input ->
+        Right (seeds, maps) ->
             putStrLn $
                 unlines
-                    [ "Part 1: " <> show (findMinLocation input)
-                    , "Part 2: " <> show (findMinLocation' input)
+                    [ "Part 1: " <> show (findMinLocation maps seeds)
+                    , "Part 2: " <> show (findMinLocation' maps seeds)
                     ]
