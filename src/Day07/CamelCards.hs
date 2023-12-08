@@ -1,23 +1,33 @@
 -- Day 7: CamelCards
 {-# LANGUAGE InstanceSigs #-}
+{-# LANGUAGE LambdaCase #-}
 
 module Day07.CamelCards (solve) where
 
 import Control.Applicative (liftA2)
 import Control.Category ((>>>))
-import Data.List (group, sort, sortBy)
+import Data.List (group, nub, sort, sortBy)
+import Data.List.Extra (replace)
 import Data.Ord (comparing)
 import ParserUtils (Parser, integer)
 import Text.Megaparsec (choice, errorBundlePretty, many, parse)
 import Text.Megaparsec.Char (char, space)
 
-data Card = Two | Three | Four | Five | Six | Seven | Eight | Nine | Ten | Jack | Queen | King | Ace
+data Card = Jack | Two | Three | Four | Five | Six | Seven | Eight | Nine | Ten | Queen | King | Ace
     deriving (Eq, Ord, Show)
 
 data HandRank = HighCard | OnePair | TwoPairs | ThreeOfAKind | FullHouse | FourOfAKind | FiveOfAKind
     deriving (Eq, Ord, Show)
 
 newtype Hand = Hand ([Card], HandRank) deriving (Eq, Show)
+
+instance Ord Hand where
+    compare :: Hand -> Hand -> Ordering
+    (Hand (cards, rank)) `compare` (Hand (cards', rank')) =
+        case rank `compare` rank' of
+            EQ -> compare cards cards'
+            LT -> LT
+            GT -> GT
 
 parseCard :: Parser Card
 parseCard =
@@ -38,17 +48,7 @@ parseCard =
         ]
 
 parseHand :: Parser Hand
-parseHand = Hand . assignHandRank <$> many parseCard
-  where
-    assignHandRank :: [Card] -> ([Card], HandRank)
-    assignHandRank cards =
-        case (length . group . sort) cards of
-            1 -> (cards, FiveOfAKind)
-            2 -> if any ((== 4) . length) (group $ sort cards) then (cards, FourOfAKind) else (cards, FullHouse)
-            3 -> if any ((== 3) . length) (group $ sort cards) then (cards, ThreeOfAKind) else (cards, TwoPairs)
-            4 -> (cards, OnePair)
-            5 -> (cards, HighCard)
-            _ -> error "Invalid hand"
+parseHand = wildcardJ . Hand . assignHandRank <$> many parseCard
 
 parseHandLine :: Parser (Hand, Int)
 parseHandLine = liftA2 (,) parseHand (space >> integer)
@@ -56,13 +56,26 @@ parseHandLine = liftA2 (,) parseHand (space >> integer)
 parseHands :: Parser [(Hand, Int)]
 parseHands = many parseHandLine
 
-instance Ord Hand where
-    compare :: Hand -> Hand -> Ordering
-    (Hand (cards, rank)) `compare` (Hand (cards', rank')) =
-        case rank `compare` rank' of
-            EQ -> compare cards cards'
-            LT -> LT
-            GT -> GT
+assignHandRank :: [Card] -> ([Card], HandRank)
+assignHandRank cards =
+    ( \case
+        [5] -> (cards, FiveOfAKind)
+        [1, 4] -> (cards, FourOfAKind)
+        [2, 3] -> (cards, FullHouse)
+        [1, 1, 3] -> (cards, ThreeOfAKind)
+        [1, 2, 2] -> (cards, TwoPairs)
+        [1, 1, 1, 2] -> (cards, OnePair)
+        _ -> (cards, HighCard)
+    )
+        $ (sort . map length . group . sort) cards
+
+wildcardJ :: Hand -> Hand
+wildcardJ h@(Hand (cards, _))
+    | Jack `elem` cards, not (all (== Jack) cards) = Hand (cards, rank')
+    | otherwise = h
+  where
+    cards' = [replace [Jack] [c] cards | c <- nub cards, c /= Jack]
+    Hand (_, rank') = maximum $ map (Hand . assignHandRank) cards'
 
 totalWinnings :: [(Hand, Int)] -> Int
 totalWinnings =
