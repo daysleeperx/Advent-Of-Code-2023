@@ -4,6 +4,7 @@
 module Day07.CamelCards (solve) where
 
 import Control.Applicative (liftA2)
+import Control.Category ((>>>))
 import Data.List (group, sort, sortBy)
 import Data.Ord (comparing)
 import ParserUtils (Parser, integer)
@@ -64,7 +65,11 @@ instance Ord Hand where
             GT -> GT
 
 totalWinnings :: [(Hand, Int)] -> Int
-totalWinnings = sum . zipWith (*) [1 ..] . map snd . sortBy (comparing fst)
+totalWinnings =
+    sortBy (comparing fst)
+        >>> map snd
+        >>> zipWith (*) [1 ..]
+        >>> sum
 
 solve :: FilePath -> IO ()
 solve filePath = do
