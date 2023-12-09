@@ -48,7 +48,7 @@ parseCard =
         ]
 
 parseHand :: Parser Hand
-parseHand = wildcardJ . Hand . assignHandRank <$> many parseCard
+parseHand = wildcardJ <$> many parseCard
 
 parseHandLine :: Parser (Hand, Int)
 parseHandLine = liftA2 (,) parseHand (space >> integer)
@@ -69,10 +69,10 @@ assignHandRank cards =
     )
         $ (sort . map length . group . sort) cards
 
-wildcardJ :: Hand -> Hand
-wildcardJ h@(Hand (cards, _))
+wildcardJ :: [Card] -> Hand
+wildcardJ cards
     | Jack `elem` cards, not (all (== Jack) cards) = Hand (cards, rank')
-    | otherwise = h
+    | otherwise = (Hand . assignHandRank) cards
   where
     cards' = [replace [Jack] [c] cards | c <- nub cards, c /= Jack]
     Hand (_, rank') = maximum $ map (Hand . assignHandRank) cards'
