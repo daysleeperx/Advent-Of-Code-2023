@@ -9,11 +9,12 @@ module ParserUtils (
     colon,
     dot,
     pipe,
+    parens,
 )
 where
 
 import Data.Void (Void)
-import Text.Megaparsec (Parsec, empty)
+import Text.Megaparsec (Parsec, between, empty)
 import Text.Megaparsec.Char (space1)
 import qualified Text.Megaparsec.Char.Lexer as L
 
@@ -45,3 +46,6 @@ dot = symbol "."
 
 pipe :: Parser String
 pipe = symbol "|"
+
+parens :: Parser a -> Parser a
+parens = between (symbol "(") (symbol ")")
