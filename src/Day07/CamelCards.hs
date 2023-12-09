@@ -74,8 +74,8 @@ wildcardJ cards
     | Jack `elem` cards, not (all (== Jack) cards) = Hand (cards, rank')
     | otherwise = (Hand . assignHandRank) cards
   where
-    cards' = [replace [Jack] [c] cards | c <- nub cards, c /= Jack]
-    Hand (_, rank') = maximum $ map (Hand . assignHandRank) cards'
+    allHands = [replace [Jack] [c] cards | c <- nub cards, c /= Jack]
+    Hand (_, rank') = maximum $ map (Hand . assignHandRank) allHands
 
 totalWinnings :: [(Hand, Int)] -> Int
 totalWinnings =
