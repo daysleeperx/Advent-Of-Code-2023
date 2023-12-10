@@ -43,13 +43,11 @@ parseInput = do
     pure (instructions, labeledMaps)
 
 go :: Map.Map String LabeledMap -> String -> Instruction -> String
-go labeledMap current instruction =
-    let
-        (left, right) = labeledMap Map.! current
-     in
-        case instruction of
-            GoLeft -> left
-            GoRight -> right
+go labeledMap current instruction = case instruction of
+    GoLeft -> left
+    GoRight -> right
+  where
+    (left, right) = labeledMap Map.! current
 
 countStepsToTarget :: String -> Map.Map String LabeledMap -> [Instruction] -> Int
 countStepsToTarget start labeledMap =
