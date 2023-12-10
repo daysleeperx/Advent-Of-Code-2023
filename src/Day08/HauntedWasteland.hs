@@ -5,10 +5,11 @@ module Day08.HauntedWasteland (solve) where
 import Control.Applicative (liftA2)
 import Control.Category ((>>>))
 import Control.Monad (void)
+import Data.List (isSuffixOf)
 import qualified Data.Map as Map
 import ParserUtils (Parser, comma, parens)
 import Text.Megaparsec (choice, count, many, parse)
-import Text.Megaparsec.Char (char, letterChar, newline, string)
+import Text.Megaparsec.Char (alphaNumChar, char, newline, string)
 import Text.Megaparsec.Error (errorBundlePretty)
 
 data Instruction = GoLeft | GoRight deriving (Show, Eq)
@@ -26,18 +27,18 @@ parseInstructions :: Parser [Instruction]
 parseInstructions = many parseInstruction
 
 parseLabel :: Parser String
-parseLabel = count 3 letterChar
+parseLabel = count 3 alphaNumChar
 
 parseLabeledMap :: Parser LabeledMap
-parseLabeledMap = parens (liftA2 (,) parseLabel (comma >> parseLabel))
+parseLabeledMap = parens (liftA2 (,) parseLabel (comma *> parseLabel))
 
 parseLine :: Parser (String, LabeledMap)
-parseLine = liftA2 (,) parseLabel (string " = " >> parseLabeledMap)
+parseLine = liftA2 (,) parseLabel (string " = " *> parseLabeledMap)
 
 parseInput :: Parser ([Instruction], Map.Map String LabeledMap)
 parseInput = do
     instructions <- parseInstructions
-    void (newline >> newline)
+    void (count 2 newline)
     labeledMaps <- Map.fromList <$> many parseLine
     pure (instructions, labeledMaps)
 
@@ -50,12 +51,21 @@ go labeledMap current instruction =
             GoLeft -> left
             GoRight -> right
 
-countStepsToTarget :: Map.Map String LabeledMap -> [Instruction] -> Int
-countStepsToTarget labeledMap =
+countStepsToTarget :: String -> Map.Map String LabeledMap -> [Instruction] -> Int
+countStepsToTarget start labeledMap =
     cycle
-        >>> scanl (go labeledMap) "AAA"
-        >>> takeWhile (/= "ZZZ")
+        >>> scanl (go labeledMap) start
+        >>> takeWhile (not . isSuffixOf "Z")
         >>> length
+
+countStepsToTargetSimul :: Map.Map String LabeledMap -> [Instruction] -> Int
+countStepsToTargetSimul labeledMap instructions =
+    foldl1
+        lcm
+        [ countStepsToTarget s labeledMap instructions
+        | s <- Map.keys labeledMap
+        , "A" `isSuffixOf` s
+        ]
 
 solve :: FilePath -> IO ()
 solve filePath = do
@@ -63,4 +73,8 @@ solve filePath = do
     case parse parseInput filePath contents of
         Left eb -> putStr (errorBundlePretty eb)
         Right (instructions, labeledMaps) ->
-            print $ countStepsToTarget labeledMaps instructions
+            putStrLn $
+                unlines
+                    [ "Part 1: " <> show (countStepsToTarget "AAA" labeledMaps instructions)
+                    , "Part 2: " <> show (countStepsToTargetSimul labeledMaps instructions)
+                    ]
