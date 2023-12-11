@@ -23,17 +23,17 @@ next = map (uncurry (-) . (last &&& head)) . windows 2
 expandHistory :: [Int] -> [[Int]]
 expandHistory = takeWhile (not . all (== 0)) . iterate next
 
-extrapolate :: [Int] -> Int
-extrapolate = sum . map last . expandHistory
+extrapolateFW :: [Int] -> Int
+extrapolateFW = sum . map last . expandHistory
 
-totalExtrapolate :: [[Int]] -> Int
-totalExtrapolate = sum . map extrapolate
+totalExtrapolateFw :: [[Int]] -> Int
+totalExtrapolateFw = sum . map extrapolateFW
 
-extrapolate' :: [Int] -> Int
-extrapolate' = foldr1 (-) . map head . expandHistory
+extrapolateBw :: [Int] -> Int
+extrapolateBw = foldr1 (-) . map head . expandHistory
 
-totalExtrapolate' :: [[Int]] -> Int
-totalExtrapolate' = sum . map extrapolate'
+totalExtrapolateBw :: [[Int]] -> Int
+totalExtrapolateBw = sum . map extrapolateBw
 
 solve :: FilePath -> IO ()
 solve filePath = do
@@ -43,6 +43,6 @@ solve filePath = do
         Right report ->
             putStrLn $
                 unlines
-                    [ "Part 1: " ++ show (totalExtrapolate report)
-                    , "Part 2: " ++ show (totalExtrapolate' report)
+                    [ "Part 1: " ++ show (totalExtrapolateFw report)
+                    , "Part 2: " ++ show (totalExtrapolateBw report)
                     ]
