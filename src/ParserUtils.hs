@@ -3,6 +3,7 @@ module ParserUtils (
     sc,
     lexeme,
     integer,
+    signedInteger,
     symbol,
     comma,
     semicolon,
@@ -28,6 +29,9 @@ lexeme = L.lexeme sc
 
 integer :: Parser Int
 integer = lexeme L.decimal
+
+signedInteger :: Parser Int
+signedInteger = L.signed sc integer
 
 symbol :: String -> Parser String
 symbol = L.symbol sc

@@ -1,5 +1,6 @@
 -- Day 2: CubeConundrum
 {-# LANGUAGE InstanceSigs #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TupleSections #-}
 
 module Day02.CubeConundrum (solve) where
@@ -48,9 +49,9 @@ parseGameId =
 
 parseGameRecord :: Parser GameRecord
 parseGameRecord = do
-    idx <- parseGameId
-    games <- parseGame' `sepBy1` semicolon
-    pure $ Gamerecord idx games
+    getGameId <- parseGameId
+    getGames <- parseGame' `sepBy1` semicolon
+    pure Gamerecord{..}
 
 parseGameRecords :: Parser [GameRecord]
 parseGameRecords = parseGameRecord `sepBy1` newline

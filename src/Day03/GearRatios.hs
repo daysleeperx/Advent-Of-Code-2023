@@ -5,6 +5,7 @@ module Day03.GearRatios (solve) where
 
 import Control.Category ((>>>))
 import Control.Monad (guard)
+import Data.Function ((&))
 import Data.List (nub, (\\))
 import ParserUtils (Parser, dot, integer)
 import Text.Megaparsec (
@@ -106,11 +107,12 @@ getAdjacentNumbers (y, x) cells = do
 
 sumGearRatios :: [Cell] -> Int
 sumGearRatios cells =
-    map (`getAdjacentNumbers` cells)
-        >>> filter ((== 2) . length)
-        >>> map (product . map getNum)
-        >>> sum
-        $ positions
+    positions
+        & ( map (`getAdjacentNumbers` cells)
+                >>> filter ((== 2) . length)
+                >>> map (product . map getNum)
+                >>> sum
+          )
   where
     positions = [getPos s | SymbolCell s <- cells]
 
