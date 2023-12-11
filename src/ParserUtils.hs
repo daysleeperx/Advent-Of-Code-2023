@@ -16,13 +16,13 @@ where
 
 import Data.Void (Void)
 import Text.Megaparsec (Parsec, between, empty)
-import Text.Megaparsec.Char (space1)
+import Text.Megaparsec.Char (hspace1)
 import qualified Text.Megaparsec.Char.Lexer as L
 
 type Parser = Parsec Void String
 
 sc :: Parser ()
-sc = L.space space1 empty empty
+sc = L.space hspace1 empty empty
 
 lexeme :: Parser a -> Parser a
 lexeme = L.lexeme sc
