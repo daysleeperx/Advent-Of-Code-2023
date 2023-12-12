@@ -10,8 +10,8 @@ import Data.List (group, nub, sort, sortBy)
 import Data.List.Extra (replace)
 import Data.Ord (comparing)
 import ParserUtils (Parser, integer)
-import Text.Megaparsec (choice, errorBundlePretty, many, parse)
-import Text.Megaparsec.Char (char, space)
+import Text.Megaparsec (choice, errorBundlePretty, many, parse, sepBy1)
+import Text.Megaparsec.Char (char, newline, space)
 
 data Card = Jack | Two | Three | Four | Five | Six | Seven | Eight | Nine | Ten | Queen | King | Ace
     deriving (Eq, Ord, Show)
@@ -54,7 +54,7 @@ parseHandLine :: Parser (Hand, Int)
 parseHandLine = liftA2 (,) parseHand (space >> integer)
 
 parseHands :: Parser [(Hand, Int)]
-parseHands = many parseHandLine
+parseHands = parseHandLine `sepBy1` newline
 
 assignHandRank :: [Card] -> ([Card], HandRank)
 assignHandRank cards =

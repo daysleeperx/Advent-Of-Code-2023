@@ -5,8 +5,8 @@ module Day04.Scratchcards (solve) where
 import Control.Monad (void)
 import Data.List (intersect)
 import ParserUtils (Parser, colon, integer, lexeme, pipe)
-import Text.Megaparsec (errorBundlePretty, many, parse)
-import Text.Megaparsec.Char (string)
+import Text.Megaparsec (errorBundlePretty, many, parse, sepBy1)
+import Text.Megaparsec.Char (newline, string)
 
 type Card = ([Int], [Int])
 
@@ -28,7 +28,7 @@ parseCard = do
     pure (winning, nums)
 
 parseCards :: Parser [Card]
-parseCards = many parseCard
+parseCards = parseCard `sepBy1` newline
 
 countWins :: Card -> Int
 countWins = length . uncurry intersect

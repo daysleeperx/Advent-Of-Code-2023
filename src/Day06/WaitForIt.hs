@@ -7,7 +7,7 @@ import Control.Applicative (liftA2)
 import Data.Tuple.Extra (both)
 import ParserUtils (Parser, colon, integer)
 import Text.Megaparsec (choice, many, parse)
-import Text.Megaparsec.Char (string)
+import Text.Megaparsec.Char (newline, string)
 import Text.Megaparsec.Error (errorBundlePretty)
 
 type Race = [(Int, Int)]
@@ -25,7 +25,7 @@ parseLine =
         *> parseNums
 
 parseRace :: Parser Race
-parseRace = liftA2 zip parseLine parseLine
+parseRace = liftA2 zip (parseLine <* newline) parseLine
 
 getWinningBounds :: (Int, Int) -> (Int, Int)
 getWinningBounds (t, dist) = (floor high, ceiling low)

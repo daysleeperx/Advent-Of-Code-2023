@@ -1,14 +1,17 @@
 -- Day 5: IfYouGiveASeedAFertilizer
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE RecordWildCards #-}
+
+-- TODO: FIX PARSING
 
 module Day05.IfYouGiveASeedAFertilizer (solve) where
 
-import Control.Applicative (liftA2)
 import Control.Category ((>>>))
+import Control.Monad (void)
 import Data.List (unfoldr)
 import ParserUtils (Parser, colon, integer)
-import Text.Megaparsec (choice, errorBundlePretty, many, parse)
-import Text.Megaparsec.Char (string)
+import Text.Megaparsec (choice, errorBundlePretty, many, parse, sepEndBy)
+import Text.Megaparsec.Char (newline, space1, string)
 
 data Range = Range
     { target :: Int
@@ -59,12 +62,21 @@ parseRangeMap =
             , HumidityToLocation <$ string "humidity-to-location map"
             ]
         <* colon
-        <*> many parseRange
+        <* newline
+        <*> parseRange `sepEndBy` newline
 
-type InputType = ([Int], [RangeMap])
+data InputType = InputType
+    { seeds :: [Int]
+    , rangeMaps :: [RangeMap]
+    }
+    deriving (Show)
 
 parseInput :: Parser InputType
-parseInput = liftA2 (,) parseSeeds (many parseRangeMap)
+parseInput = do
+    seeds <- parseSeeds
+    void space1
+    rangeMaps <- many parseRangeMap
+    pure InputType{..}
 
 convertNum :: Int -> Range -> Int
 convertNum num Range{target = t, source = src, step = s}
@@ -108,9 +120,11 @@ solve filePath = do
     contents <- readFile filePath
     case parse parseInput filePath contents of
         Left eb -> putStr (errorBundlePretty eb)
-        Right (seeds, maps) ->
+        Right InputType{seeds = s, rangeMaps = maps} ->
             putStrLn $
                 unlines
-                    [ "Part 1: " <> show (findMinLocation maps seeds)
-                    , "Part 2: " <> show (findMinLocation' maps seeds)
+                    [ "Part 1: " <> show (findMinLocation maps s)
+                    , "Part 2: " <> show (findMinLocation' maps s)
+                    , show s
+                    , show maps
                     ]

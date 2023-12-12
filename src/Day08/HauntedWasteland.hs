@@ -8,8 +8,8 @@ import Control.Monad (void)
 import Data.List (isSuffixOf)
 import qualified Data.Map as Map
 import ParserUtils (Parser, comma, parens)
-import Text.Megaparsec (choice, count, many, parse)
-import Text.Megaparsec.Char (alphaNumChar, char, newline, string)
+import Text.Megaparsec (choice, count, many, parse, sepBy1)
+import Text.Megaparsec.Char (alphaNumChar, char, newline, space1, string)
 import Text.Megaparsec.Error (errorBundlePretty)
 
 data Instruction = GoLeft | GoRight deriving (Show, Eq)
@@ -38,8 +38,8 @@ parseLine = liftA2 (,) parseLabel (string " = " *> parseLabeledMap)
 parseInput :: Parser ([Instruction], Map.Map String LabeledMap)
 parseInput = do
     instructions <- parseInstructions
-    void (count 2 newline)
-    labeledMaps <- Map.fromList <$> many parseLine
+    void space1
+    labeledMaps <- Map.fromList <$> parseLine `sepBy1` newline
     pure (instructions, labeledMaps)
 
 go :: Map.Map String LabeledMap -> String -> Instruction -> String
