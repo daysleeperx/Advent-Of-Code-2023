@@ -10,6 +10,7 @@ import qualified Day06.WaitForIt as WaitForIt
 import qualified Day07.CamelCards as CamelCards
 import qualified Day08.HauntedWasteland as HauntedWasteland
 import qualified Day09.MirageMaintenance as MirageMaintenance
+import qualified Day10.PipeMaze as PipeMaze
 import System.Environment (getArgs)
 
 solvers :: [FilePath -> IO ()]
@@ -24,6 +25,7 @@ solvers =
     , CamelCards.solve
     , HauntedWasteland.solve
     , MirageMaintenance.solve
+    , PipeMaze.solve
     ]
 
 main :: IO ()
