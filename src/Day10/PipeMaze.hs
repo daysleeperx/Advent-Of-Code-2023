@@ -6,8 +6,8 @@ module Day10.PipeMaze (solve) where
 import qualified Data.Map as M
 import Data.Maybe (catMaybes)
 import ParserUtils (Parser)
-import Text.Megaparsec (choice, many, parse, sepBy1)
-import Text.Megaparsec.Char (char, newline)
+import Text.Megaparsec (many, oneOf, parse, sepBy1)
+import Text.Megaparsec.Char (newline)
 import Text.Megaparsec.Error (errorBundlePretty)
 
 type Coord = (Int, Int)
@@ -21,17 +21,7 @@ data InputType = InputType
     deriving (Show)
 
 parseRow :: Parser [Char]
-parseRow =
-    (many . choice)
-        [ char '|'
-        , char '-'
-        , char 'L'
-        , char 'J'
-        , char '7'
-        , char 'F'
-        , char 'S'
-        , char '.'
-        ]
+parseRow = many (oneOf "|-LJ7FS.")
 
 parseMaze :: Parser Maze
 parseMaze = parseRow `sepBy1` newline
@@ -93,7 +83,7 @@ mazeToGraph maze =
     grid = mazeToGrid maze
 
 findLoop :: InputType -> [Coord]
-findLoop InputType{..} = dfs [start] []
+findLoop InputType{..} = start : dfs [start] []
   where
     dfs :: [Coord] -> [Coord] -> [Coord]
     dfs [] _ = []
@@ -102,7 +92,7 @@ findLoop InputType{..} = dfs [start] []
         | otherwise = dfs (coords <> graph M.! coord) (coord : visited)
 
 getFarthestDistance :: InputType -> Int
-getFarthestDistance = (`div` 2) . succ . length . findLoop
+getFarthestDistance = (`div` 2) . length . findLoop
 
 solve :: FilePath -> IO ()
 solve filePath = do
