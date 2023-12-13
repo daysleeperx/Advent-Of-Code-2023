@@ -3,7 +3,7 @@
 
 module Day10.PipeMaze (solve) where
 
-import Control.Monad (forM_)
+import Control.Monad (forM, forM_, guard)
 import ParserUtils (Parser)
 import Text.Megaparsec (choice, many, parse, sepBy1)
 import Text.Megaparsec.Char (char, newline)
@@ -33,6 +33,23 @@ parseRow = many parseTile
 
 parseMaze :: Parser Maze
 parseMaze = parseRow `sepBy1` newline
+
+data TileWithCoord = TileWithCoord
+    { tile :: Tile
+    , coord :: Coord
+    }
+    deriving (Show, Eq)
+
+inBounds :: Maze -> Coord -> Bool
+inBounds maze (x, y) = 0 <= x && x < length (head maze) && 0 <= y && y < length maze
+
+populateNeighbours :: Maze -> [(TileWithCoord, [TileWithCoord])]
+populateNeighbours maze = do
+    x <- [0 .. length (head maze) - 1]
+    y <- [0 .. length maze - 1]
+    let coord = (x, y)
+    let tile = maze !! y !! x
+    pure (TileWithCoord{..}, [])
 
 solve :: FilePath -> IO ()
 solve filePath = do
