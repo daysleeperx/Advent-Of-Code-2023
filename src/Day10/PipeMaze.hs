@@ -45,11 +45,14 @@ inBounds maze (x, y) = 0 <= x && x < length (head maze) && 0 <= y && y < length 
 
 populateNeighbours :: Maze -> [(TileWithCoord, [TileWithCoord])]
 populateNeighbours maze = do
-    x <- [0 .. length (head maze) - 1]
-    y <- [0 .. length maze - 1]
-    let coord = (x, y)
+    coord@(x, y) <-
+        [ (x, y)
+            | x <- [0 .. length (head maze)]
+            , y <- [0 .. length maze]
+            ]
     let tile = maze !! y !! x
-    pure (TileWithCoord{..}, [])
+    let twc = TileWithCoord{..}
+    pure (twc, [])
 
 solve :: FilePath -> IO ()
 solve filePath = do
