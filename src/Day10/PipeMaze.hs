@@ -54,6 +54,9 @@ connectEast = (`elem` "-7J")
 connectWest :: Char -> Bool
 connectWest = (`elem` "-FL")
 
+allConns :: [Char -> Bool]
+allConns = [connectNorth, connectSouth, connectEast, connectWest]
+
 neighbours :: Coord -> M.Map Coord Char -> [Coord]
 neighbours coord@(x, y) grid =
     case grid M.! coord of
@@ -63,10 +66,7 @@ neighbours coord@(x, y) grid =
         'J' -> applyConns [connectNorth, connectWest] [(x, y - 1), (x - 1, y)]
         '7' -> applyConns [connectSouth, connectWest] [(x, y + 1), (x - 1, y)]
         'F' -> applyConns [connectSouth, connectEast] [(x, y + 1), (x + 1, y)]
-        'S' ->
-            applyConns
-                [connectNorth, connectSouth, connectEast, connectWest]
-                [(x, y - 1), (x, y + 1), (x + 1, y), (x - 1, y)]
+        'S' -> applyConns allConns [(x, y - 1), (x, y + 1), (x + 1, y), (x - 1, y)]
         _ -> []
   where
     applyConns :: [Char -> Bool] -> [Coord] -> [Coord]
