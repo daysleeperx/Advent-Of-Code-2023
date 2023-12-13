@@ -1,8 +1,10 @@
 -- Day 10: PipeMaze
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TupleSections #-}
 
 module Day10.PipeMaze (solve) where
 
+import Control.Monad (forM_)
 import qualified Data.Map as M
 import Data.Maybe (catMaybes)
 import ParserUtils (Parser)
@@ -94,12 +96,31 @@ findLoop InputType{..} = start : dfs [start] []
 getFarthestDistance :: InputType -> Int
 getFarthestDistance = (`div` 2) . length . findLoop
 
+printPath :: [Coord] -> M.Map Coord Char -> IO ()
+printPath path grid = do
+    let (xMin, xMax) = (minimum . map fst $ path, maximum . map fst $ path)
+    let (yMin, yMax) = (minimum . map snd $ path, maximum . map snd $ path)
+    let row = map (,'.') [0 .. (xMax - xMin)]
+    let rows = map (,row) [0 .. (yMax - yMin)]
+    putStrLn $
+        unlines
+            [ [ if (x + xMin, y + yMin) `elem` path then 'X' else grid M.! (x + xMin, y + yMin)
+              | (x, _) <- r
+              ]
+            | (y, r) <- rows
+            ]
+
 solve :: FilePath -> IO ()
 solve filePath = do
     contents <- readFile filePath
     case parse parseInput filePath contents of
         Left eb -> putStr (errorBundlePretty eb)
-        Right input ->
+        Right input -> do
+            let grid = lines contents
+            let grid' = mazeToGrid grid
+            let path = findLoop input
+            forM_ path print
+            printPath path grid'
             putStrLn $
                 unlines
                     [ "Part 1: " ++ show (getFarthestDistance input)
