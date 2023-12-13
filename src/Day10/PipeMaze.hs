@@ -32,7 +32,7 @@ parseInput :: Parser InputType
 parseInput = do
     maze <- parseMaze
     let grid = mazeToGrid maze
-    let graph = mazeToGraph maze
+    let graph = gridToGraph grid
     let start = (head . M.keys . M.filter (== 'S')) grid
     pure InputType{..}
 
@@ -74,15 +74,13 @@ neighbours coord@(x, y) grid =
     applyConns :: [Char -> Bool] -> [Coord] -> [Coord]
     applyConns conns coords = catMaybes $ zipWith (connect grid) conns coords
 
-mazeToGraph :: Maze -> M.Map Coord [Coord]
-mazeToGraph maze =
+gridToGraph :: M.Map Coord Char -> M.Map Coord [Coord]
+gridToGraph grid =
     M.fromList
         [ (coord, neighbours coord grid)
         | coord <- M.keys grid
         , grid M.! coord /= '.'
         ]
-  where
-    grid = mazeToGrid maze
 
 findLoop :: InputType -> [Coord]
 findLoop InputType{..} = start : dfs [start] []
