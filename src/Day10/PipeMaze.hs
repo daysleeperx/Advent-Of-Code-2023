@@ -46,13 +46,13 @@ connect :: M.Map Coord Char -> (Char -> Bool) -> Coord -> Maybe Coord
 connect grid c coord = M.lookup coord grid >>= \t -> if c t then Just coord else Nothing
 
 connectNorth :: Char -> Bool
-connectNorth t = t `elem` "|F7"
+connectNorth = (`elem` "|F7")
 connectSouth :: Char -> Bool
-connectSouth t = t `elem` "|LJ"
+connectSouth = (`elem` "|LJ")
 connectEast :: Char -> Bool
-connectEast t = t `elem` "-7J"
+connectEast = (`elem` "-7J")
 connectWest :: Char -> Bool
-connectWest t = t `elem` "-FL"
+connectWest = (`elem` "-FL")
 
 neighbours :: Coord -> M.Map Coord Char -> [Coord]
 neighbours coord@(x, y) grid =
