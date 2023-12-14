@@ -1,42 +1,39 @@
 -- Day 10: PipeMaze
 {-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE TupleSections #-}
 
 module Day10.PipeMaze (solve) where
 
-import Control.Monad (forM_)
+import Control.Applicative (liftA2)
 import qualified Data.Map as M
-import Data.Maybe (catMaybes)
 import ParserUtils (Parser)
 import Text.Megaparsec (many, oneOf, parse, sepBy1)
 import Text.Megaparsec.Char (newline)
 import Text.Megaparsec.Error (errorBundlePretty)
 
-type Coord = (Int, Int)
+data Dir = N | S | E | W deriving (Show)
 
-type Maze = [[Char]]
+type Coord = (Int, Int)
+type Grid = M.Map Coord Char
 
 data InputType = InputType
     { start :: Coord
-    , graph :: M.Map Coord [Coord]
+    , grid :: Grid
     }
     deriving (Show)
 
 parseRow :: Parser [Char]
 parseRow = many (oneOf "|-LJ7FS.")
 
-parseMaze :: Parser Maze
-parseMaze = parseRow `sepBy1` newline
+parseMaze :: Parser Grid
+parseMaze = mazeToGrid <$> parseRow `sepBy1` newline
 
 parseInput :: Parser InputType
 parseInput = do
-    maze <- parseMaze
-    let grid = mazeToGrid maze
-    let graph = gridToGraph grid
+    grid <- parseMaze
     let start = (head . M.keys . M.filter (== 'S')) grid
     pure InputType{..}
 
-mazeToGrid :: Maze -> M.Map Coord Char
+mazeToGrid :: [[Char]] -> Grid
 mazeToGrid maze =
     M.fromList
         [ ((x, y), tile)
@@ -44,82 +41,69 @@ mazeToGrid maze =
         , (x, tile) <- zip [0 ..] row
         ]
 
-connect :: M.Map Coord Char -> (Char -> Bool) -> Coord -> Maybe Coord
+connect :: Grid -> (Char -> Bool) -> Coord -> Maybe Coord
 connect grid c coord = M.lookup coord grid >>= \t -> if c t then Just coord else Nothing
 
 connectNorth :: Char -> Bool
-connectNorth = (`elem` "|F7")
+connectNorth = (`elem` "|F7S")
 connectSouth :: Char -> Bool
-connectSouth = (`elem` "|LJ")
+connectSouth = (`elem` "|LJS")
 connectEast :: Char -> Bool
-connectEast = (`elem` "-7J")
+connectEast = (`elem` "-7JS")
 connectWest :: Char -> Bool
-connectWest = (`elem` "-FL")
+connectWest = (`elem` "-FLS")
 
-allConns :: [Char -> Bool]
-allConns = [connectNorth, connectSouth, connectEast, connectWest]
-
-neighbours :: Coord -> M.Map Coord Char -> [Coord]
-neighbours coord@(x, y) grid =
-    case grid M.! coord of
-        '|' -> applyConns [connectNorth, connectSouth] [(x, y - 1), (x, y + 1)]
-        '-' -> applyConns [connectEast, connectWest] [(x + 1, y), (x - 1, y)]
-        'L' -> applyConns [connectNorth, connectEast] [(x, y - 1), (x + 1, y)]
-        'J' -> applyConns [connectNorth, connectWest] [(x, y - 1), (x - 1, y)]
-        '7' -> applyConns [connectSouth, connectWest] [(x, y + 1), (x - 1, y)]
-        'F' -> applyConns [connectSouth, connectEast] [(x, y + 1), (x + 1, y)]
-        'S' -> applyConns allConns [(x, y - 1), (x, y + 1), (x + 1, y), (x - 1, y)]
-        _ -> []
+traverseL :: Grid -> Coord -> Dir -> Maybe [Coord]
+traverseL grid (x, y) dir = case dir of
+    E ->
+        connect grid connectEast (x + 1, y) >>= \c -> case grid M.! c of
+            '-' -> doTraverseL grid c E
+            '7' -> doTraverseL grid c S
+            'J' -> doTraverseL grid c N
+            _ -> Just [c]
+    W ->
+        connect grid connectWest (x - 1, y) >>= \c -> case grid M.! c of
+            '-' -> doTraverseL grid c W
+            'F' -> doTraverseL grid c S
+            'L' -> doTraverseL grid c N
+            _ -> Just [c]
+    N ->
+        connect grid connectNorth (x, y - 1) >>= \c -> case grid M.! c of
+            '|' -> doTraverseL grid c N
+            'F' -> doTraverseL grid c E
+            '7' -> doTraverseL grid c W
+            _ -> Just [c]
+    S ->
+        connect grid connectSouth (x, y + 1) >>= \c -> case grid M.! c of
+            '|' -> doTraverseL grid c S
+            'J' -> doTraverseL grid c W
+            'L' -> doTraverseL grid c E
+            _ -> Just [c]
   where
-    applyConns :: [Char -> Bool] -> [Coord] -> [Coord]
-    applyConns conns coords = catMaybes $ zipWith (connect grid) conns coords
-
-gridToGraph :: M.Map Coord Char -> M.Map Coord [Coord]
-gridToGraph grid =
-    M.fromList
-        [ (coord, neighbours coord grid)
-        | coord <- M.keys grid
-        , grid M.! coord /= '.'
-        ]
-
-findLoop :: InputType -> [Coord]
-findLoop InputType{..} = start : dfs [start] []
-  where
-    dfs :: [Coord] -> [Coord] -> [Coord]
-    dfs [] _ = []
-    dfs (coord : coords) visited
-        | coord `elem` visited = coord : dfs coords visited
-        | otherwise = dfs (coords <> graph M.! coord) (coord : visited)
+    doTraverseL g c d = liftA2 (:) (Just c) (traverseL g c d)
 
 getFarthestDistance :: InputType -> Int
-getFarthestDistance = (`div` 2) . length . findLoop
+getFarthestDistance InputType{..} = maybe 0 length (traverseL grid start S) `div` 2
 
-printPath :: [Coord] -> M.Map Coord Char -> IO ()
-printPath path grid = do
-    let (xMin, xMax) = (minimum . map fst $ path, maximum . map fst $ path)
-    let (yMin, yMax) = (minimum . map snd $ path, maximum . map snd $ path)
-    let row = map (,'.') [0 .. (xMax - xMin)]
-    let rows = map (,row) [0 .. (yMax - yMin)]
-    putStrLn $
-        unlines
-            [ [ if (x + xMin, y + yMin) `elem` path then 'X' else grid M.! (x + xMin, y + yMin)
-              | (x, _) <- r
-              ]
-            | (y, r) <- rows
-            ]
+{--https://en.wikipedia.org/wiki/Shoelace_formula-}
+
+shoelace :: [Coord] -> Int
+shoelace coords = abs . sum . zipWith (\(x, y) (x', y') -> (x - x') * (y + y')) coords $ tail coords
+
+getEnclosedInLoop :: InputType -> Int
+getEnclosedInLoop InputType{..} =
+    case traverseL grid start S of
+        Nothing -> 0
+        Just path -> (shoelace path - length path + 3) `div` 2
 
 solve :: FilePath -> IO ()
 solve filePath = do
     contents <- readFile filePath
     case parse parseInput filePath contents of
         Left eb -> putStr (errorBundlePretty eb)
-        Right input -> do
-            let grid = lines contents
-            let grid' = mazeToGrid grid
-            let path = findLoop input
-            forM_ path print
-            printPath path grid'
+        Right input ->
             putStrLn $
                 unlines
                     [ "Part 1: " ++ show (getFarthestDistance input)
+                    , "Part 2: " ++ show (getEnclosedInLoop input)
                     ]
